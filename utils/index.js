@@ -4,6 +4,7 @@ const axios = require('axios')
 const fs = require('fs')
 const path = require('path')
 const Queue = require('./queue')
+const spawn = require('child_process').spawn
 
 /**
  * @description: 获取弹幕内容和发言用户然后组装成chatglm的问答方式去请求回复
@@ -116,8 +117,20 @@ const dayFormat = (date = new Date(),type) => {
  * @return {*}
  */
 const strToTTs = (str) => {
-    const tts = new TTS()
-    tts.speak(str)
+    // pip install edge-tts  需要安装edge-tts
+    return new Promise((resolve, reject) => {
+        const child = spawn('edge-tts', ['--voice ar-EG-SalmaNeural --text',str])
+        child.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`);
+        });
+        child.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`);
+        });
+        child.on('close', (code) => {
+            console.log(`子进程退出，退出码 ${code}`);
+            resolve()
+        });
+    })
 }
 
 /**
